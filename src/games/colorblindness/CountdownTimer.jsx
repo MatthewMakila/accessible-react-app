@@ -4,7 +4,7 @@ import { ProgressBar } from 'react-bootstrap';
 function CountdownTimer({ initialTime, onComplete}) {
     const [timeRemaining, setTimeRemaining] = useState(initialTime);
 
-    useEffect(() => {
+    useEffect(() => { // interval to decrease time by 1/sec 
         const intervalId = setInterval(() => {
             setTimeRemaining((prevTime) => {
                 if (prevTime <= 1) {
@@ -24,7 +24,7 @@ function CountdownTimer({ initialTime, onComplete}) {
         }
     }, [timeRemaining, onComplete]);
 
-    const progress = (timeRemaining / initialTime) * 100;
+    const progress = (timeRemaining / initialTime) * 100; // calculate proportion for progress 
 
     return (
         <ProgressBar variant="danger" animated now={progress} label={`${Math.max(0, timeRemaining)}s`} />

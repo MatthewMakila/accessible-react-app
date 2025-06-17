@@ -124,9 +124,9 @@ const ColorblindGame = () =>{
 
         closeBtnRef.current.onclick = function () {    // nav to next round when closed
           if (roundNumber < ROUND_4) {
-            navigate(`/round/${roundNumber + 1}`);
+            navigate(`/colorblindness/round/${roundNumber + 1}`);
           } else {
-            navigate(`/round/${ROUND_1}`); // TEMP: this should ideally go to a results/debrief/home page
+            navigate(`/colorblindness/round/${ROUND_1}`); // TEMP: this should ideally go to a results/debrief/home page
           }
         }
     }
