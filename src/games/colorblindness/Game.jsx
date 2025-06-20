@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import CountdownTimer from './CountdownTimer';
 
 const ColorblindGame = () =>{
@@ -10,8 +12,12 @@ const ColorblindGame = () =>{
   const { round } = useParams(); // grab the round num from the URL params
   const roundNumber = Number(round) || 1;
   const navigate = useNavigate(); // route to rounds
-  const gameEndedRef = useRef(false);
   const stopGameRef = useRef(() => {});
+  const resetGameRef = useRef(() => {});
+  const gameEndedRef = useRef(false);
+  const svgWidth = useRef(0);
+  const svgHeight = useRef(0);
+  const radius = useRef(0);
   
   // refs for HTML elements
   const svgRef = useRef(null);
@@ -21,10 +27,32 @@ const ColorblindGame = () =>{
   const playerScoreRef = useRef(0);
   const computerScoreRef = useRef(0);
   const gameOverPopupRef = useRef(null);
-  const gameOverMessageRef = useRef(null);
-  const closeBtnRef = useRef(null);
-  
-  useEffect(() => {
+  const [gameOverMessage, setGameOverMessage] = useState("");
+  // for modal
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+  useEffect(() => { // resizeObserver to update SVG dimensions for screen orientation changes
+    const observer = new ResizeObserver(() => {
+      if (!svgRef.current) return; // if svgRef is not available, do nothing
+      const rect = svgRef.current.getBoundingClientRect();
+      svgWidth.current = rect.width;
+      svgHeight.current = rect.height;
+      radius.current = svgHeight.current * 0.10;
+      resetGameRef.current(); // reset game to apply new dimensions
+    });
+
+    if (svgRef.current) {
+      observer.observe(svgRef.current);
+    }
+
+    return () => {
+      if (svgRef.current) observer.unobserve(svgRef.current);
+    };
+  }, []);
+
+  useEffect(() => { // set viewport height for mobile devices
     const setVH = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -35,6 +63,19 @@ const ColorblindGame = () =>{
     return () => window.removeEventListener('resize', setVH);
   }, []);
 
+  useEffect(() => { // redirect to next round when game ends (modal is closed)
+    if (!show && gameEndedRef.current) {
+      const ROUND_1 = 1;
+      const ROUND_4 = 4;
+
+      if (roundNumber < ROUND_4) {
+        navigate(`/colorblindness/round/${roundNumber + 1}`);
+      } else {
+        navigate(`/colorblindness/round/${ROUND_1}`); // Or to results/debrief page
+      }
+    }
+  }, [show, roundNumber, navigate]);
+  
   useEffect(() => {
     if (!svgRef.current) { // make sure the SVG canvas is available
       console.error("SVG canvas not found!");
@@ -46,15 +87,13 @@ const ColorblindGame = () =>{
     const RED_LABEL = 'R'; const GREEN_LABEL = 'G'; const YELLOW_LABEL = 'Y';
     const colors_2 = [RED, GREEN] // we never actually try to pop yellow balls (I think this is constant for all rounds)
     const numBalls = 9;
-    const radius = 50;
     const velocity = 1; // fixed ball velocity
-    const { width, height } = svgRef.current.getBoundingClientRect(); // getBoundingClientRect to get rendered size of canvas
-    let svgWidth = width;
-    let svgHeight = height;
-
-    console.log(`SVG Width: ${svgWidth}, SVG Height: ${svgHeight}`); // log the size of the SVG canvas
-
+    const { width, height } = svgRef.current.getBoundingClientRect(); // getBoundingClientRect to get initial rendered size of canvas
+    svgWidth.current = width;
+    svgHeight.current = height;
+    radius.current = svgHeight.current * 0.10;
     gameEndedRef.current = false;
+
     let balls = [];
     let targetColor = '';
     let playerScore = 0;
@@ -102,8 +141,8 @@ const ColorblindGame = () =>{
 
         // show popup (msg based on win/lose)
         let didWin = playerScore > computerScore;
-        gameOverMessageRef.current.textContent = didWin ? winMessage : loseMessage;
-        gameOverPopupRef.current.classList.remove('hidden'); // pop is visible
+        setGameOverMessage(didWin ? winMessage : loseMessage);
+        handleShow() // show popup
 
         // make balls inaccessible to screen readers when game ends
         balls.forEach(ball => {
@@ -113,22 +152,6 @@ const ColorblindGame = () =>{
             el.setAttribute('aria-hidden', 'true');
             el.style.pointerEvents = 'none';
         });
-
-        // mark canvas and other text as hidden to screen readers
-        svgRef.current.setAttribute('aria-hidden', 'true'); //NOTE: I honestly don't think this is working...maybe this has something to do with the HTML structure?
-
-        // make the popup the focus after game ends
-        gameOverPopupRef.current.setAttribute('aria-modal', 'true');
-        gameOverPopupRef.current.setAttribute('tabindex', '-1'); // focused
-        gameOverPopupRef.current.focus();
-
-        closeBtnRef.current.onclick = function () {    // nav to next round when closed
-          if (roundNumber < ROUND_4) {
-            navigate(`/colorblindness/round/${roundNumber + 1}`);
-          } else {
-            navigate(`/colorblindness/round/${ROUND_1}`); // TEMP: this should ideally go to a results/debrief/home page
-          }
-        }
     }
 
     function resetGame() {
@@ -146,8 +169,8 @@ const ColorblindGame = () =>{
     ***************/
     function getRandomPosition() {
         return {
-            x: Math.random() * (svgWidth - 2 * radius) + radius,
-            y: Math.random() * (svgHeight - 2 * radius) + radius,
+            x: Math.random() * (svgWidth.current - 2 * radius.current) + radius.current,
+            y: Math.random() * (svgHeight.current - 2 * radius.current) + radius.current,
             dx: velocity * (Math.random() < 0.5 ? 1 : -1), // Fixed speed, random direction
             dy: velocity * (Math.random() < 0.5 ? 1 : -1)  // Fixed speed, random direction
         };
@@ -169,14 +192,14 @@ const ColorblindGame = () =>{
             const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');  // Create the circle
             ball.setAttribute('cx', 0);
             ball.setAttribute('cy', 0);
-            ball.setAttribute('r', radius);
+            ball.setAttribute('r', radius.current);
             ball.setAttribute('fill', color_val);
             
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');    // text to visually indicate ball color with a letter
             text.setAttribute('x', 0);
-            text.setAttribute('y', radius * 0.25); // adjustment to center text
+            text.setAttribute('y', radius.current * 0.25); // adjustment to center text
             text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('font-size', radius * 0.75);
+            text.setAttribute('font-size', radius.current * 0.75);
             text.setAttribute('fill', 'black');
             text.setAttribute('pointer-events', 'none');
             
@@ -213,7 +236,7 @@ const ColorblindGame = () =>{
                     resultMessageRef.current.style.color = RED;
                 }
                 updateScores();
-                resetGame();
+                resetGameRef.current();
             });
         
             // put group together (text + circle) and add to SVG
@@ -234,10 +257,10 @@ const ColorblindGame = () =>{
             ball.y += ball.dy;
     
             // bounce ball off edges
-            if (ball.x - radius <= 0 || ball.x + radius >= svgWidth) {
+            if (ball.x - radius.current <= 0 || ball.x + radius.current >= svgWidth.current) {
                 ball.dx *= -1;
             }
-            if (ball.y - radius <= 0 || ball.y + radius >= svgHeight) {
+            if (ball.y - radius.current <= 0 || ball.y + radius.current >= svgHeight.current) {
                 ball.dy *= -1;
             }
     
@@ -247,13 +270,12 @@ const ColorblindGame = () =>{
     
         requestAnimationFrame(moveBalls);
     }
-
     /************** 
     GAME LOOP 
     ***************/
+    resetGameRef.current = resetGame; // setting funct
 
     updateScores();
-    //startTimer(gameDuration);
     stopGameRef.current = stopGame;
     setTargetColor();
     createBalls();
@@ -289,13 +311,16 @@ const ColorblindGame = () =>{
       { /* Game key */ }
       <div ref={gameKeyRef} id="gameKey"></div>
 
-      { /* REPLACE ME- Game over */ }
-      <div ref={gameOverPopupRef} id="gamePopup" className="popup hidden" role="alertdialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupMessage">
-        <div className="popup-content">
-          <span ref={closeBtnRef} id="closePopup" className="close-button" role="button" aria-label="Close pop up and move to next round">x</span>
-          <p ref={gameOverMessageRef} id="popupMessage" aria-live="assertive"></p>
-        </div>
-      </div>
+      { /* Game over modal */ }
+      <Modal ref={gameOverPopupRef} show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Time's Up!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body><p>{gameOverMessage}</p></Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>Continue to Next Round</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

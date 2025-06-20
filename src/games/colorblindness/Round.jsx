@@ -46,9 +46,40 @@ export default function Round({ roundNumber }) {
         </Container>
       );      
     case 3:
-      break;
+      return (
+        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark" style={{ width: '35rem' }}>
+            <Card.Header>
+              <Card.Title>Color Blindness – Round {round}/4</Card.Title>
+            </Card.Header>
+            <Card.Body>
+              <ul>
+                <li>In this round, you will play just as you did in round one, but each balloon will be labeled with a letter representing its respective color.</li>
+                <li>R = Red</li>
+                <li>G = Green</li>
+                <li>Y = Yellow</li>
+              </ul>
+              <Button variant="success" size="lg" onClick={() => navigate(`/colorblindness/game/${round}`)}>Begin!</Button>
+            </Card.Body>
+          </Card>
+        </Container>
+      );
     case 4:
-      break;
+      return (
+        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark" style={{ width: '35rem' }}>
+            <Card.Header>
+              <Card.Title>Color Blindness – Round {round}/4</Card.Title>
+            </Card.Header>
+            <Card.Body>
+              <ul>
+                <li>In this round, you will... </li>
+              </ul>
+              <Button variant="success" size="lg" onClick={() => navigate(`/colorblindness/game/${round}`)}>Begin!</Button>
+            </Card.Body>
+          </Card>
+        </Container>
+      );
     default:
       break;
   }
