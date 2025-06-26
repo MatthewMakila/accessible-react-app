@@ -27,7 +27,7 @@ function CountdownTimer({ initialTime, onComplete}) {
     const progress = (timeRemaining / initialTime) * 100; // calculate proportion for progress 
 
     return (
-        <ProgressBar variant="danger" animated now={progress} label={`${Math.max(0, timeRemaining)}s`} />
+        <ProgressBar variant="info" animated now={progress} label={`${Math.max(0, timeRemaining)}s`} />
     );
 }
 

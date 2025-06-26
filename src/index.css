@@ -1,12 +1,9 @@
 :root {
   font-family: 'Lato', sans-serif;
-  /*font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;*/
   line-height: 1.5;
   font-weight: 400;
-  margin: 0 auto;
-  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   padding: 0;
-  overflow: hidden; /* no scrolling */
   text-align: center;
   --vh: 100vh;
 
@@ -30,8 +27,7 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
+  overflow: hidden;
   background-color: '#e5e9f2'
 }
 
@@ -44,7 +40,7 @@ ul {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #e5e9f2;
   }
   a:hover {
     color: #747bff;
@@ -54,24 +50,43 @@ ul {
   }
 }
 
-#appContainer {
+.appContainer {
   display: flex;
   flex-direction: column;
   height: calc(var(--vh, 1vh) * 100);
   background-color: #e5e9f2;
+  overflow: hidden; /* no scrolling */
 }
 
-#gameCanvas {
+.fullscreen-flex {
+  height: calc(var(--vh, 1vh) * 100);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gameCanvas {
   flex: 1;
   width: 100%;
-  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   display: block;
+  overflow: hidden; /* no scrolling */
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: bold-normal;
 }
 
 /* Game bar pieces */
 #playerScore,
 #computerScore {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: bold;
 }
 
@@ -79,15 +94,11 @@ ul {
   min-height: 1.5em; /* enough height for one line of text */
   margin: 0;
   padding: 0;
-  text-align: center; /* optional: keep text centered */
+  text-align: center;
   font-weight: bold;
 }
 
-#targetColorText {
-  margin: 5px 0;
-}
-
-/* Game key -- want this completely transparent with text that comes through, however I want to be able to click through it too*/
+/* Game key -- want this transparent with text, but I want to be able to click through it*/
 #gameKey { 
   position: fixed;
   bottom: 5px;
@@ -95,9 +106,8 @@ ul {
   background-color: transparent;
   color: black;
   padding: 10px;
-  border-radius: 8px;
-  font-size: 18px;
-  max-width: 300px;
+  font-size: 2vh;
+  max-width: 225px;
   z-index: 0;
   text-align: left;
   pointer-events: none;

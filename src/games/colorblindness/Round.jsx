@@ -12,8 +12,9 @@ export default function Round({ roundNumber }) {
   switch (round) { // Switch to handle different rounds
     case 1:
       return (
-        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
-          <Card border="dark" style={{ width: '35rem' }}>
+        <>
+        <Container fluid className="fullscreen-flex" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark">
             <Card.Header>
               <Card.Title>Color Blindness – Round {round}/4</Card.Title>
             </Card.Header>
@@ -27,11 +28,12 @@ export default function Round({ roundNumber }) {
             </Card.Body>
           </Card>
         </Container>
+        </>
       );
     case 2:
       return (
-        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
-          <Card border="dark" style={{ width: '35rem' }}>
+        <Container fluid className="fullscreen-flex" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark">
             <Card.Header>
               <Card.Title>Color Blindness – Round {round}/4</Card.Title>
             </Card.Header>
@@ -47,8 +49,8 @@ export default function Round({ roundNumber }) {
       );      
     case 3:
       return (
-        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
-          <Card border="dark" style={{ width: '35rem' }}>
+        <Container fluid className="fullscreen-flex" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark">
             <Card.Header>
               <Card.Title>Color Blindness – Round {round}/4</Card.Title>
             </Card.Header>
@@ -66,8 +68,8 @@ export default function Round({ roundNumber }) {
       );
     case 4:
       return (
-        <Container fluid className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: ' #e5e9f2' }}>
-          <Card border="dark" style={{ width: '35rem' }}>
+        <Container fluid className="fullscreen-flex" style={{ backgroundColor: ' #e5e9f2' }}>
+          <Card border="dark">
             <Card.Header>
               <Card.Title>Color Blindness – Round {round}/4</Card.Title>
             </Card.Header>

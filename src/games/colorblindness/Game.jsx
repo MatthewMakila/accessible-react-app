@@ -18,66 +18,64 @@ const ColorblindGame = () =>{
   const svgWidth = useRef(0);
   const svgHeight = useRef(0);
   const radius = useRef(0);
+  const [playerScore, setPlayerScore] = useState(0);
+  const [computerScore, setComputerScore] = useState(0);
   
   // refs for HTML elements
   const svgRef = useRef(null);
   const gameKeyRef = useRef(null);
   const targetColorTextRef = useRef(null);
   const resultMessageRef = useRef(null);
-  const playerScoreRef = useRef(0);
-  const computerScoreRef = useRef(0);
   const gameOverPopupRef = useRef(null);
   const [gameOverMessage, setGameOverMessage] = useState("");
+  
   // for modal
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  useEffect(() => { // resizeObserver to update SVG dimensions for screen orientation changes
+  useEffect(() => {   // resizeObserver to update SVG dimensions for screen orientation changes
     const observer = new ResizeObserver(() => {
-      if (!svgRef.current) return; // if svgRef is not available, do nothing
+      if (!svgRef.current) return;  // ensure svgRef available
+      
       const rect = svgRef.current.getBoundingClientRect();
       svgWidth.current = rect.width;
       svgHeight.current = rect.height;
-      radius.current = svgHeight.current * 0.10;
-      resetGameRef.current(); // reset game to apply new dimensions
+
+      radius.current = svgHeight.current * 0.10;  // update radius based on new height
+      resetGameRef.current();   // reset game to apply new dimensions
     });
 
-    if (svgRef.current) {
+    if (svgRef.current) { // only if svgRef available
       observer.observe(svgRef.current);
     }
 
     return () => {
-      if (svgRef.current) observer.unobserve(svgRef.current);
+      if (svgRef.current) observer.unobserve(svgRef.current); // dismount 
     };
   }, []);
 
-  useEffect(() => { // set viewport height for mobile devices
-    const setVH = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-
-    setVH();
-    window.addEventListener('resize', setVH);
-    return () => window.removeEventListener('resize', setVH);
-  }, []);
-
-  useEffect(() => { // redirect to next round when game ends (modal is closed)
+  useEffect(() => {   // handle logistics when game ends
     if (!show && gameEndedRef.current) {
-      const ROUND_1 = 1;
+      // store game scores in localStorage for scoreboard
+      const curr_player_score = playerScore || 0;   // 0 default as precaution 
+      const curr_computer_score = computerScore || 0;
       const ROUND_4 = 4;
+            
+      localStorage.setItem('player_score', curr_player_score);
+      localStorage.setItem('computer_score', curr_computer_score); 
 
+      // redirect to next round when game ends (modal is closed)
       if (roundNumber < ROUND_4) {
         navigate(`/colorblindness/round/${roundNumber + 1}`);
       } else {
-        navigate(`/colorblindness/round/${ROUND_1}`); // Or to results/debrief page
+        navigate(`/colorblindness/recap/`); // Or to results/debrief page
       }
     }
   }, [show, roundNumber, navigate]);
   
-  useEffect(() => {
-    if (!svgRef.current) { // make sure the SVG canvas is available
+  useEffect(() => {   // run game's mechanics
+    if (!svgRef.current) {     // make sure the SVG canvas is available
       console.error("SVG canvas not found!");
       return;
     }
@@ -85,10 +83,11 @@ const ColorblindGame = () =>{
     const ROUND_1 = 1; const ROUND_2 = 2; const ROUND_3 = 3; const ROUND_4 = 4;
     const RED = 'red'; const GREEN = 'green'; const YELLOW = 'yellow';
     const RED_LABEL = 'R'; const GREEN_LABEL = 'G'; const YELLOW_LABEL = 'Y';
-    const colors_2 = [RED, GREEN] // we never actually try to pop yellow balls (I think this is constant for all rounds)
+    const colors_2 = [RED, GREEN]   // never actually try to pop yellow balls
     const numBalls = 9;
     const velocity = 1; // fixed ball velocity
     const { width, height } = svgRef.current.getBoundingClientRect(); // getBoundingClientRect to get initial rendered size of canvas
+    
     svgWidth.current = width;
     svgHeight.current = height;
     radius.current = svgHeight.current * 0.10;
@@ -96,12 +95,12 @@ const ColorblindGame = () =>{
 
     let balls = [];
     let targetColor = '';
-    let playerScore = 0;
-    let computerScore = 0;
-    let winMessage = "Congrats, you won! 🎉 ";
-    let loseMessage = "Time's up! Better luck next time. 😢 ";
+    //let playerScore = 0;
+    // let computerScore = 0;
+    let winMessage = "WINNER IS PLAYER! 🎉 ";
+    let loseMessage = "WINNER IS COMPUTER! 😢 ";
 
-    let colors  // adapted from how they defined colors in old version
+    let colors;  // adapted from how they defined colors in old version
     if (
       roundNumber === ROUND_2 ||
       roundNumber === ROUND_4
@@ -130,10 +129,10 @@ const ColorblindGame = () =>{
     GAME MECHANICS 
     ***************/
 
-    function updateScores() {
+    /*function updateScores() {
         playerScoreRef.current.textContent = `Player: ${playerScore}`;
         computerScoreRef.current.textContent = `Computer: ${computerScore}`;
-    }
+    }*/
 
     function stopGame() {
         if (gameEndedRef.current) return; // if game ended, do nothing
@@ -226,16 +225,19 @@ const ColorblindGame = () =>{
         
             group.addEventListener('click', function () {   // click handler for the group (text + circle)
                 if (color === targetColor) {
-                    playerScore++;
+                    // playerScoreRef.current++;
+                    setPlayerScore(prev => prev + 1);
                     resultMessageRef.current.textContent = "Correct!";
                     resultMessageRef.current.style.color = GREEN;
                 } else {
-                    computerScore++;
-                    playerScore--;
+                    // computerScore++;
+                    setComputerScore(prev => prev + 1);
+                    // playerScoreRef.current--;
+                    setPlayerScore(prev => prev - 1);
                     resultMessageRef.current.textContent = "Wrong!";
                     resultMessageRef.current.style.color = RED;
                 }
-                updateScores();
+                //updateScores();
                 resetGameRef.current();
             });
         
@@ -275,7 +277,7 @@ const ColorblindGame = () =>{
     ***************/
     resetGameRef.current = resetGame; // setting funct
 
-    updateScores();
+    //updateScores();
     stopGameRef.current = stopGame;
     setTargetColor();
     createBalls();
@@ -284,7 +286,7 @@ const ColorblindGame = () =>{
   }, []);
 
   return (
-    <div id="appContainer">
+    <div className="appContainer">
       <Container fluid style={{ padding: 10 }}> {/* Game title, right/wrong msg */}
         <h2>Color Blindness - Round {roundNumber} of 4</h2>
         <p ref={resultMessageRef} id="resultMessage" aria-live="assertive"></p>
@@ -292,19 +294,19 @@ const ColorblindGame = () =>{
       
       <Container fluid>
         <Row>
-          <Col className="text-end"><h3 ref={playerScoreRef} id="playerScore">Player: 0</h3></Col>
+          <Col className="text-end"><h3 id="playerScore">Player: {playerScore}</h3></Col>
           <Col>
             {/* Trigger game ending when time bar reaches 0! */}
             <CountdownTimer initialTime={10} onComplete={() => stopGameRef.current()}/> 
           </Col>
-          <Col className="text-start"><h3 ref={computerScoreRef} id="computerScore">Computer: 0</h3></Col>
+          <Col className="text-start"><h3 id="computerScore">Computer: {computerScore}</h3></Col>
         </Row>
       </Container>
       
       { /* Game msgs + canvas (SVG, announcements) */ }
-      <h3 ref={targetColorTextRef} id="targetColorText" aria-live="assertive">Click the correct color ball</h3>
+      <h3 ref={targetColorTextRef} aria-live="assertive">Click the correct color ball</h3>
 
-      <svg ref={svgRef} id="gameCanvas" preserveAspectRatio="xMidYMid meet" role="group" aria-labelledby="canvas-title">
+      <svg ref={svgRef} className="gameCanvas" preserveAspectRatio="xMidYMid meet" role="group" aria-labelledby="canvas-title">
         <title id="canvas-title">Game canvas with moving balls</title>
       </svg>
 
@@ -312,9 +314,9 @@ const ColorblindGame = () =>{
       <div ref={gameKeyRef} id="gameKey"></div>
 
       { /* Game over modal */ }
-      <Modal ref={gameOverPopupRef} show={show} onHide={handleClose}>
+      <Modal ref={gameOverPopupRef} show={show} onHide={handleClose} size='xl' centered>
         <Modal.Header closeButton>
-          <Modal.Title>Time's Up!</Modal.Title>
+          <Modal.Title className='w-100 text-center'>Time's Up!</Modal.Title>
         </Modal.Header>
         <Modal.Body><p>{gameOverMessage}</p></Modal.Body>
         <Modal.Footer>

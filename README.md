@@ -40,3 +40,4 @@ npm run build
 - If you need to add assets (e.g., images) you can add them to ```src/assets/```
 - I'm using [react-bootstrap](https://react-bootstrap.netlify.app/docs/getting-started/introduction/) for most of the app's styling, but if you need to make edits to the global CSS, that's housed in ```index.css```
 - You'll want to edit ```App.jsx``` to add or modify routes for the games you're working on. Your specific ```Game.jsx``` and ```Round.jsx``` will utilize this routing information
+- ```Game.jsx```, ```Round.jsx```, and any other related files you use for a specific game might require edits to the UI and game mechanics: ```return``` and ```useEffect``` will be useful areas of the code to make these edits, respectively. 
